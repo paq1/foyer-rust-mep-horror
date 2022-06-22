@@ -1,7 +1,7 @@
 use bevy::prelude::Component;
 
 #[derive(Component)]
-pub struct Player;
+pub struct Enemy;
 
 #[derive(Component)]
-pub struct FromPlayer;
+pub struct FromEnemy;

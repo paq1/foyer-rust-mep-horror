@@ -1,10 +1,12 @@
 use bevy::prelude::*;
-use crate::{GameTextures, WinSize, COMPUTER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED};
+use crate::{GameTextures, WinSize, COMPUTER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED, FILE_LASER_SIZE};
+use crate::component::sprite_size::SpriteSize;
 
 use crate::component::{
     player::Player, 
     velocity::Velocity,
-    movable::Movable
+    movable::Movable,
+    laser::Laser
 };
 
 pub struct PlayerPlugin;
@@ -37,6 +39,7 @@ fn player_spawn_system(
             ..Default::default()
         })
         .insert(Player)
+        .insert(SpriteSize::from(COMPUTER_SIZE))
         .insert(Movable {auto_despawn: false})
         .insert(Velocity {x: 0., y: 0.});
 }
@@ -76,7 +79,9 @@ fn player_fire_system(
                     },
                     ..Default::default()
                 })
+                .insert(SpriteSize::from(FILE_LASER_SIZE))
                 .insert(Movable {auto_despawn: true})
+                .insert(Laser)
                 .insert(Velocity {x: 0., y: 1.});
         }
     }

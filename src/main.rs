@@ -1,25 +1,30 @@
 use bevy::prelude::*;
 
 mod game_element;
-use game_element::player::PlayerPlugin;
+use game_element::{
+    player::PlayerPlugin,
+    enemy::EnemyPlugin
+};
 
 mod component;
 use component::{
-    player::Player,
     velocity::Velocity,
-    movable::Movable
+    movable::Movable,
+    enemy::Enemy,
+    sprite_size::SpriteSize,
+    laser::Laser
 };
 
+use bevy::math::Vec3Swizzles;
+use bevy::sprite::collide_aabb::collide;
 
 // region constants
 const COMPUTER_SPRITE: &str = "pc-codeur.png";
 const COMPUTER_SIZE: (f32, f32) = (64., 64.);
-
+const ENEMY_SPRITE: &str = "fixme-file.png";
 const FILE_LASER_SPRITE: &str = "scala-file.png";
 const FILE_LASER_SIZE: (f32, f32) = (64., 64.);
-
 const SPRITE_SCALE: f32 = 1.;
-
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 // endregion
@@ -31,7 +36,8 @@ pub struct WinSize {
 }
 struct GameTextures {
     computer: Handle<Image>,
-    file_laser: Handle<Image>
+    file_laser: Handle<Image>,
+    fixme_file: Handle<Image>
 }
 // endregion
 
@@ -46,8 +52,10 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
+        .add_plugin(EnemyPlugin)
         .add_startup_system(setup_system)
         .add_system(movable_system)
+        .add_system(player_file_hit_enemy_system)
         .run();
 }
 
@@ -68,6 +76,7 @@ fn setup_system(
     let game_textures = GameTextures {
         computer: asset_server.load(COMPUTER_SPRITE),
         file_laser: asset_server.load(FILE_LASER_SPRITE),
+        fixme_file: asset_server.load(ENEMY_SPRITE)
     };
     commands.insert_resource(game_textures);
 }
@@ -94,3 +103,36 @@ fn movable_system(
     }
 }
 
+fn player_file_hit_enemy_system(
+    mut commands: Commands,
+    laser_query: Query<(Entity, &Transform, &SpriteSize), With<Laser>>,
+    enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>
+) {
+    for (laser_entity, laser_tf, laser_size) in laser_query.iter() {
+        let laser_scale = Vec2::from(laser_tf.scale.xy());
+
+        println!("ici on voit le laser");
+
+        for (enemy_entity, enemy_tf, enemy_size) in enemy_query.iter() {
+
+            println!("ici on voit l'enemy");
+
+            let enemy_scale = Vec2::from(enemy_tf.scale.xy());
+
+            let collision = collide(
+                laser_tf.translation,
+                laser_size.0 * laser_scale,
+                enemy_tf.translation,
+                enemy_size.0 * laser_scale
+            );
+
+            if let Some(_) = collision {
+                //remove enemy
+                commands.entity(enemy_entity).despawn();
+
+                // remove laser
+                commands.entity(laser_entity).despawn();
+            }
+        }
+    }
+}
