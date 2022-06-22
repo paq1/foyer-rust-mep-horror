@@ -4,10 +4,20 @@ mod game_element;
 use game_element::player::PlayerPlugin;
 
 mod component;
+use component::{
+    player::Player,
+    velocity::Velocity,
+    movable::Movable
+};
+
 
 // region constants
 const COMPUTER_SPRITE: &str = "pc-codeur.png";
 const COMPUTER_SIZE: (f32, f32) = (64., 64.);
+
+const FILE_LASER_SPRITE: &str = "scala-file.png";
+const FILE_LASER_SIZE: (f32, f32) = (64., 64.);
+
 const SPRITE_SCALE: f32 = 1.;
 
 const TIME_STEP: f32 = 1. / 60.;
@@ -20,7 +30,8 @@ pub struct WinSize {
     pub h: f32
 }
 struct GameTextures {
-    computer: Handle<Image>
+    computer: Handle<Image>,
+    file_laser: Handle<Image>
 }
 // endregion
 
@@ -36,6 +47,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
         .add_startup_system(setup_system)
+        .add_system(movable_system)
         .run();
 }
 
@@ -54,8 +66,31 @@ fn setup_system(
     commands.insert_resource(win_size);
 
     let game_textures = GameTextures {
-        computer: asset_server.load(COMPUTER_SPRITE)
+        computer: asset_server.load(COMPUTER_SPRITE),
+        file_laser: asset_server.load(FILE_LASER_SPRITE),
     };
     commands.insert_resource(game_textures);
+}
+
+fn movable_system(
+    mut commands: Commands,
+    win_size: Res<WinSize>,
+    mut query: Query<(Entity, &Velocity, &mut Transform, &Movable)>
+) {
+    for (entity, velocity, mut transform, movable) in query.iter_mut() {
+        let translation = &mut transform.translation;
+        translation.x += velocity.x * TIME_STEP * BASE_SPEED;
+        translation.y += velocity.y * TIME_STEP * BASE_SPEED;
+
+        if movable.auto_despawn {
+            const MARGIN: f32 = 200.;
+            if translation.y > win_size.h / 2. + MARGIN
+                || translation.y < -win_size.h / 2. - MARGIN
+                || translation.x > win_size.w / 2. + MARGIN
+                || translation.x < -win_size.w / 2. - MARGIN {
+                commands.entity(entity).despawn();
+            }
+        }
+    }
 }
 
