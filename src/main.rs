@@ -1,13 +1,11 @@
 use bevy::prelude::*;
 
-mod game_element;
-use game_element::{
-    player::PlayerPlugin,
-    enemy::EnemyPlugin
-};
-
 mod plugins;
-use plugins::collide_plugin::CollideFireEnemiesPlugin;
+use plugins::{
+    player::PlayerPlugin,
+    enemy::EnemyPlugin,
+    collide_plugin::CollideFireEnemiesPlugin
+};
 
 mod component;
 use component::{
