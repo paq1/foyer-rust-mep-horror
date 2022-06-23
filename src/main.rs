@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-use std::iter::FromIterator;
 use bevy::prelude::*;
 
 mod game_element;
@@ -8,17 +6,14 @@ use game_element::{
     enemy::EnemyPlugin
 };
 
+mod plugins;
+use plugins::collide_plugin::CollideFireEnemiesPlugin;
+
 mod component;
 use component::{
     velocity::Velocity,
     movable::Movable,
-    enemy::Enemy,
-    sprite_size::SpriteSize,
-    laser::Laser
 };
-
-use bevy::math::Vec3Swizzles;
-use bevy::sprite::collide_aabb::collide;
 
 // region constants
 const COMPUTER_SPRITE: &str = "pc-codeur.png";
@@ -57,9 +52,9 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
         .add_plugin(EnemyPlugin)
+        .add_plugin(CollideFireEnemiesPlugin)
         .add_startup_system(setup_system)
         .add_system(movable_system)
-        .add_system(player_file_hit_enemy_system)
         .run();
 }
 
@@ -108,85 +103,3 @@ fn movable_system(
     }
 }
 
-fn player_file_hit_enemy_system(
-    mut commands: Commands,
-    mut enemy_count: ResMut<EnemyCount>,
-    laser_query: Query<(Entity, &Transform, &SpriteSize), With<Laser>>,
-    enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>
-) {
-    laser_query
-        .iter()
-        .fold(
-            HashSet::new(), 
-            |acc, current| 
-            handle_collide_laser_enemies(&mut commands, &mut enemy_count, &acc, current, &enemy_query)
-        );
-}
-
-fn handle_collide_laser_enemies(
-    commands: &mut Commands,
-    mut enemy_count: &mut ResMut<EnemyCount>,
-    despawned_entities: &HashSet<Entity>, 
-    laser_info: (Entity, &Transform, &SpriteSize),
-    enemy_query: &Query<(Entity, &Transform, &SpriteSize), With<Enemy>>
-) -> HashSet<Entity> {
-    enemy_query
-        .iter()
-        .fold(
-            despawned_entities.clone(), 
-            |acc: HashSet<Entity>, current| 
-            handle_collide_laser_enemy(commands, &mut enemy_count, acc, laser_info, current)
-        )
-}
-
-fn handle_collide_laser_enemy(
-    commands: &mut Commands,
-    enemy_count: &mut ResMut<EnemyCount>,
-    despawned_entities: HashSet<Entity>, 
-    laser_info: (Entity, &Transform, &SpriteSize),
-    enemy_info: (Entity, &Transform, &SpriteSize)
-) -> HashSet<Entity> {
-    let (laser_entity, laser_tf, laser_size) = laser_info;
-    let (enemy_entity, enemy_tf, enemy_size) = enemy_info;
-
-    let laser_scale = Vec2::from(laser_tf.scale.xy());
-    let enemy_scale = Vec2::from(enemy_tf.scale.xy());
-
-    let collision = collide(
-        laser_tf.translation,
-        laser_size.0 * laser_scale,
-        enemy_tf.translation,
-        enemy_size.0 * enemy_scale
-    );
-
-    if let Some(_) = collision {
-        // ces checks permettent de ne pas delete deux fois une meme entité dans le cas d'une collision double
-        // (évite un warning de bevy)
-        //remove enemy
-        let despawn_plus_enemy: HashSet<Entity> = if !despawned_entities.contains(&enemy_entity) {
-            commands.entity(enemy_entity).despawn();
-            enemy_count.0 -= 1;
-            despawned_entities
-                .union(&HashSet::from_iter(vec![enemy_entity]))
-                .map(|a| a.clone())
-                .collect()
-        } else {
-            despawned_entities
-        };
-        
-        // remove laser
-        if !despawn_plus_enemy.contains(&laser_entity) {
-            commands.entity(laser_entity).despawn();
-            
-            despawn_plus_enemy
-                .union(&HashSet::from_iter(vec![laser_entity]))
-                .map(|a| a.clone())
-                .collect::<HashSet<Entity>>()
-
-        } else {
-            despawn_plus_enemy
-        }        
-    } else {
-        despawned_entities
-    }
-}
