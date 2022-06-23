@@ -124,7 +124,7 @@ fn player_file_hit_enemy_system(
 }
 
 fn handle_collide_laser_enemies(
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     mut enemy_count: &mut ResMut<EnemyCount>,
     despawned_entities: &HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
@@ -140,8 +140,8 @@ fn handle_collide_laser_enemies(
 }
 
 fn handle_collide_laser_enemy(
-    mut commands: &mut Commands,
-    mut enemy_count: &mut ResMut<EnemyCount>,
+    commands: &mut Commands,
+    enemy_count: &mut ResMut<EnemyCount>,
     despawned_entities: HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
     enemy_info: (Entity, &Transform, &SpriteSize)
@@ -156,7 +156,7 @@ fn handle_collide_laser_enemy(
         laser_tf.translation,
         laser_size.0 * laser_scale,
         enemy_tf.translation,
-        enemy_size.0 * laser_scale
+        enemy_size.0 * enemy_scale
     );
 
     if let Some(_) = collision {

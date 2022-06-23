@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::{GameTextures, WinSize, EnemyCount, COMPUTER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED, ENEMY_MAX};
+use crate::{GameTextures, WinSize, EnemyCount, COMPUTER_SIZE, ENEMY_MAX};
 use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
@@ -27,14 +27,13 @@ fn enemy_spawn_system(
 }
 
 fn spawn_enemy(
-    mut commands: &mut Commands,
-    mut enemy_count: &mut ResMut<EnemyCount>,
+    commands: &mut Commands,
+    enemy_count: &mut ResMut<EnemyCount>,
     game_textures: &Res<GameTextures>,
     win_size: &Res<WinSize>
 ) {
     let mut rng = thread_rng();
     let w_span = win_size.w / 2. - 100.;
-    let h_span = win_size.h / 2. - 100.;
     let x = rng.gen_range(-w_span..w_span);
     let y = win_size.h / 2. - 64.;// rng.gen_range(-h_span..h_span);
 

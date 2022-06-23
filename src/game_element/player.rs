@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::{GameTextures, WinSize, COMPUTER_SIZE, SPRITE_SCALE, TIME_STEP, BASE_SPEED, FILE_LASER_SIZE};
+use crate::{GameTextures, WinSize, COMPUTER_SIZE, SPRITE_SCALE, FILE_LASER_SIZE};
 use crate::component::sprite_size::SpriteSize;
 
 use crate::component::{
