@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use bevy::prelude::*;
 
 mod game_element;
@@ -27,6 +28,7 @@ const FILE_LASER_SIZE: (f32, f32) = (64., 64.);
 const SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
+const ENEMY_MAX: u32 = 2; 
 // endregion
 
 // region resources
@@ -39,6 +41,7 @@ struct GameTextures {
     file_laser: Handle<Image>,
     fixme_file: Handle<Image>
 }
+struct EnemyCount(u32);
 // endregion
 
 fn main() {
@@ -79,6 +82,7 @@ fn setup_system(
         fixme_file: asset_server.load(ENEMY_SPRITE)
     };
     commands.insert_resource(game_textures);
+    commands.insert_resource(EnemyCount(0));
 }
 
 fn movable_system(
@@ -105,17 +109,17 @@ fn movable_system(
 
 fn player_file_hit_enemy_system(
     mut commands: Commands,
+    mut enemy_count: ResMut<EnemyCount>,
     laser_query: Query<(Entity, &Transform, &SpriteSize), With<Laser>>,
     enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>
 ) {
+
+    let mut despawned_entities: HashSet<Entity> = HashSet::new();
+
     for (laser_entity, laser_tf, laser_size) in laser_query.iter() {
         let laser_scale = Vec2::from(laser_tf.scale.xy());
 
-        println!("ici on voit le laser");
-
         for (enemy_entity, enemy_tf, enemy_size) in enemy_query.iter() {
-
-            println!("ici on voit l'enemy");
 
             let enemy_scale = Vec2::from(enemy_tf.scale.xy());
 
@@ -128,10 +132,19 @@ fn player_file_hit_enemy_system(
 
             if let Some(_) = collision {
                 //remove enemy
-                commands.entity(enemy_entity).despawn();
+                if !despawned_entities.contains(&enemy_entity) {
+                    commands.entity(enemy_entity).despawn();
+                    despawned_entities.insert(enemy_entity);
+                    enemy_count.0 -= 1;
+                }
+                
 
                 // remove laser
-                commands.entity(laser_entity).despawn();
+                if !despawned_entities.contains(&laser_entity) {
+                    commands.entity(laser_entity).despawn();
+                    despawned_entities.insert(laser_entity);
+                }
+
             }
         }
     }
