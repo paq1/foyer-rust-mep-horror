@@ -11,6 +11,7 @@ mod component;
 use component::{
     velocity::Velocity,
     movable::Movable,
+    player::ScoreBugFix
 };
 
 // region constants
@@ -36,6 +37,16 @@ struct GameTextures {
     fixme_file: Handle<Image>
 }
 struct EnemyCount(u32);
+
+pub struct Scoring {
+    pub bug_fix: u32
+}
+
+impl Default for Scoring {
+    fn default() -> Self {
+        Scoring {bug_fix: 0}
+    }
+}
 // endregion
 
 fn main() {
@@ -68,6 +79,7 @@ fn setup_system(
     let window = windows.get_primary_mut().unwrap();
     let (win_w, win_h) = (window.width(), window.height());
     let win_size = WinSize {w: win_w, h: win_h};
+    let pos_score = get_position_score(&win_size);
     commands.insert_resource(win_size);
 
     let game_textures = GameTextures {
@@ -77,6 +89,37 @@ fn setup_system(
     };
     commands.insert_resource(game_textures);
     commands.insert_resource(EnemyCount(0));
+    commands.insert_resource(Scoring::default());
+
+
+    // on ajoute le texte du score
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: "bug fix : 0".to_string(),
+                    style: TextStyle {
+                        color: Color::ORANGE,
+                        font: asset_server.load("COMICATE.TTF"),
+                        font_size: 18.
+                    }
+                }],
+                /*
+                alignment: TextAlignment {
+                    vertical: VerticalAlign::Center,
+                    horizontal: HorizontalAlign::Center
+                }
+                */
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(pos_score.0, pos_score.1, 1.),
+            ..Default::default()
+        })
+        .insert(ScoreBugFix);
+}
+
+fn get_position_score(win_size: &WinSize) -> (f32, f32) {
+    (-win_size.w / 2., win_size.h / 2.)
 }
 
 fn movable_system(

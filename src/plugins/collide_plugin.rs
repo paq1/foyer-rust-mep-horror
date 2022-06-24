@@ -5,14 +5,15 @@ use bevy::sprite::collide_aabb::collide;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
-use crate::EnemyCount;
+use crate::{EnemyCount, Scoring};
 use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
 };
 
 use crate::component::{
-    laser::Laser
+    laser::Laser,
+    player::ScoreBugFix
 };
 
 pub struct CollideFireEnemiesPlugin;
@@ -27,40 +28,46 @@ impl Plugin for CollideFireEnemiesPlugin {
 fn player_file_hit_enemy_system(
     mut commands: Commands,
     mut enemy_count: ResMut<EnemyCount>,
+    mut scoring: ResMut<Scoring>,
     laser_query: Query<(Entity, &Transform, &SpriteSize), With<Laser>>,
-    enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>
+    enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
+    mut score_bug_fix_query: Query<(Entity, &mut Text), With<ScoreBugFix>>
 ) {
     laser_query
         .iter()
         .fold(
             HashSet::new(), 
             |acc, current| 
-            handle_collide_laser_enemies(&mut commands, &mut enemy_count, &acc, current, &enemy_query)
+            handle_collide_laser_enemies(&mut commands, &mut enemy_count, &mut scoring, &acc, current, &enemy_query, &mut score_bug_fix_query)
         );
 }
 
 fn handle_collide_laser_enemies(
     commands: &mut Commands,
     mut enemy_count: &mut ResMut<EnemyCount>,
+    mut scoring: &mut ResMut<Scoring>,
     despawned_entities: &HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
-    enemy_query: &Query<(Entity, &Transform, &SpriteSize), With<Enemy>>
+    enemy_query: &Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
+    score_bug_fix_query: &mut Query<(Entity, &mut Text), With<ScoreBugFix>>
 ) -> HashSet<Entity> {
     enemy_query
         .iter()
         .fold(
             despawned_entities.clone(), 
             |acc: HashSet<Entity>, current| 
-            handle_collide_laser_enemy(commands, &mut enemy_count, acc, laser_info, current)
+            handle_collide_laser_enemy(commands, &mut enemy_count, &mut scoring, acc, laser_info, current, score_bug_fix_query)
         )
 }
 
 fn handle_collide_laser_enemy(
     commands: &mut Commands,
     enemy_count: &mut ResMut<EnemyCount>,
+    scoring: &mut ResMut<Scoring>,
     despawned_entities: HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
-    enemy_info: (Entity, &Transform, &SpriteSize)
+    enemy_info: (Entity, &Transform, &SpriteSize),
+    score_bug_fix_query: &mut Query<(Entity, &mut Text), With<ScoreBugFix>>
 ) -> HashSet<Entity> {
     let (laser_entity, laser_tf, laser_size) = laser_info;
     let (enemy_entity, enemy_tf, enemy_size) = enemy_info;
@@ -82,6 +89,12 @@ fn handle_collide_laser_enemy(
         let despawn_plus_enemy: HashSet<Entity> = if !despawned_entities.contains(&enemy_entity) {
             commands.entity(enemy_entity).despawn();
             enemy_count.0 -= 1;
+            scoring.bug_fix += 1;
+            
+            for (_, mut text) in score_bug_fix_query.iter_mut() {
+                text.sections[0].value = format!("bug fix : {}", scoring.bug_fix).to_string();
+            }
+            
             despawned_entities
                 .union(&HashSet::from_iter(vec![enemy_entity]))
                 .map(|a| a.clone())
