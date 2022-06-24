@@ -1,24 +1,24 @@
-use bevy::prelude::*;
-
 mod plugins;
+mod resources;
+mod component;
+mod factory;
+
+use bevy::prelude::*;
 use plugins::{
     player::PlayerPlugin,
     enemy::EnemyPlugin,
     collide_plugin::CollideFireEnemiesPlugin
 };
-
-mod component;
 use component::{
     velocity::Velocity,
     movable::Movable,
     player::ScoreBugFix
 };
+use resources::*;
+use factory::texture_factory::*;
 
 // region constants
-const COMPUTER_SPRITE: &str = "pc-codeur.png";
 const COMPUTER_SIZE: (f32, f32) = (64., 64.);
-const ENEMY_SPRITE: &str = "fixme-file.png";
-const FILE_LASER_SPRITE: &str = "scala-file.png";
 const FILE_LASER_SIZE: (f32, f32) = (64., 64.);
 const SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
@@ -26,28 +26,6 @@ const BASE_SPEED: f32 = 500.;
 const ENEMY_MAX: u32 = 2; 
 // endregion
 
-// region resources
-pub struct WinSize {
-    pub w: f32,
-    pub h: f32
-}
-struct GameTextures {
-    computer: Handle<Image>,
-    file_laser: Handle<Image>,
-    fixme_file: Handle<Image>
-}
-struct EnemyCount(u32);
-
-pub struct Scoring {
-    pub bug_fix: u32
-}
-
-impl Default for Scoring {
-    fn default() -> Self {
-        Scoring {bug_fix: 0}
-    }
-}
-// endregion
 
 fn main() {
     App::new()
@@ -82,15 +60,11 @@ fn setup_system(
     let pos_score = get_position_score(&win_size);
     commands.insert_resource(win_size);
 
-    let game_textures = GameTextures {
-        computer: asset_server.load(COMPUTER_SPRITE),
-        file_laser: asset_server.load(FILE_LASER_SPRITE),
-        fixme_file: asset_server.load(ENEMY_SPRITE)
-    };
+    let game_textures = create_game_textures(&asset_server);
+
     commands.insert_resource(game_textures);
     commands.insert_resource(EnemyCount(0));
     commands.insert_resource(Scoring::default());
-
 
     // on ajoute le texte du score
     commands

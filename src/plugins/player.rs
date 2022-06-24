@@ -1,6 +1,10 @@
 use bevy::prelude::*;
-use crate::{GameTextures, WinSize, COMPUTER_SIZE, SPRITE_SCALE, FILE_LASER_SIZE};
+
+
+
+use crate::{COMPUTER_SIZE, SPRITE_SCALE, FILE_LASER_SIZE};
 use crate::component::sprite_size::SpriteSize;
+use crate::resources::{GameTextures, WinSize};
 
 use crate::component::{
     player::Player, 
