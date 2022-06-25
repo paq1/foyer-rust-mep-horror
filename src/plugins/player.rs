@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use crate::{COMPUTER_SIZE, SPRITE_SCALE, FILE_LASER_SIZE};
 use crate::component::sprite_size::SpriteSize;
 use crate::resources::{GameTextures, WinSize};
+use crate::AppState;
 
 use crate::component::{
     player::Player, 
@@ -18,10 +19,16 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_startup_system_to_stage(StartupStage::PostStartup, player_spawn_system)
-            // .add_system(player_movement_system)
-            .add_system(player_keyboard_event_system)
-            .add_system(player_fire_system);
+            // .add_startup_system_to_stage(StartupStage::PostStartup, player_spawn_system)
+            .add_system_set(
+                SystemSet::on_enter(AppState::InGame)
+                    .with_system(player_spawn_system)
+            )
+            .add_system_set(
+                SystemSet::on_update(AppState::InGame)
+                    .with_system(player_keyboard_event_system)
+                    .with_system(player_fire_system)
+            );
     }
 }
 

@@ -5,13 +5,16 @@ use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
 };
-
+use crate::AppState;
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system(enemy_spawn_system);
+        .add_system_set(
+            SystemSet::on_update(AppState::InGame)
+                .with_system(enemy_spawn_system)
+            );
     }
 }
 
