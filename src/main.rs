@@ -14,18 +14,20 @@ use component::{
     velocity::Velocity,
     movable::Movable,
     player::ScoreBugFix,
-    menu::TextMenu
+    menu::TextMenu,
+    hud::TextTimer
 };
-use resources::*;
+use resources::{Timer as MonTimer, WinSize, GameTextures, Scoring};
 use factory::texture_factory::*;
 use states::AppState;
 
-// region constants
+// region constantes
 const SPRITE_SIZE: (f32, f32) = (64., 64.);
 const SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 const ENEMY_MAX: u32 = 2; 
+const TIME: f32 = 30.; 
 // endregion
 
 
@@ -46,6 +48,8 @@ fn main() {
         .add_system_set(
             SystemSet::on_enter(AppState::InGame)
                 .with_system(write_scoring_system)
+                .with_system(write_timer_system)
+                .with_system(restart_timer_system)
         )
         .add_system_set(
             SystemSet::on_exit(AppState::MainMenu)
@@ -58,6 +62,8 @@ fn main() {
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
                 .with_system(movable_system)
+                .with_system(update_timer_system)
+                .with_system(update_timer_text_system)
         )
         .run();
 }
@@ -161,6 +167,7 @@ fn setup_system(
 
     commands.insert_resource(game_textures);
     commands.insert_resource(Scoring::default());
+    commands.insert_resource(MonTimer(TIME));
 }
 
 fn get_position_score(win_size: &WinSize) -> (f32, f32) {
@@ -189,3 +196,62 @@ fn movable_system(
     }
 }
 
+fn restart_timer_system(mut timer: ResMut<MonTimer>) {
+    timer.0 = TIME;
+}
+
+fn update_timer_system(
+    mut timer: ResMut<MonTimer>,
+    time: Res<Time>
+) {
+    timer.0 -= time.delta_seconds();
+}
+
+fn update_timer_text_system(
+    timer: ResMut<MonTimer>,
+    mut query_timer_text: Query<&mut Text, With<TextTimer>>
+) {
+    let time_val = match timer.0 {
+        a if a < 0. => 0.,
+        a => a  
+    };
+
+    let mut text = query_timer_text.get_single_mut().unwrap();
+    text.sections[0].value = format!("MEP in {:.0} seconds", time_val).to_string();
+}
+
+fn write_timer_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    win_size: Res<WinSize>
+) {
+
+    let x = 0.;//win_size.w - 256.; 
+    let y = win_size.h / 2.; 
+
+    // on ajoute le texte du score
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: "MEP in 0 seconds".to_string(),
+                    style: TextStyle {
+                        color: Color::ORANGE,
+                        font: asset_server.load("COMICATE.TTF"),
+                        font_size: 36.
+                    }
+                }],
+                /*
+                alignment: TextAlignment {
+                    vertical: VerticalAlign::Center,
+                    horizontal: HorizontalAlign::Center
+                },
+                */
+                
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(x, y, 1.),
+            ..Default::default()
+        })
+        .insert(TextTimer);
+}
