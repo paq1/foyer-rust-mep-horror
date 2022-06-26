@@ -5,7 +5,8 @@ use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
     velocity::Velocity,
-    movable::Movable
+    movable::Movable,
+    state::InGameComponent
 };
 use crate::AppState;
 pub struct EnemyPlugin;
@@ -54,5 +55,6 @@ fn spawn_enemy(
         .insert(SpriteSize::from(SPRITE_SIZE))
         .insert(Velocity {x: 0., y: -0.5})
         .insert(Movable { auto_despawn: true })
-        .insert(Enemy);
+        .insert(Enemy)
+        .insert(InGameComponent);
 }

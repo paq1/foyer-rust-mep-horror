@@ -8,7 +8,8 @@ use crate::component::{
     velocity::Velocity,
     movable::Movable,
     laser::Laser,
-    sprite_size::SpriteSize
+    sprite_size::SpriteSize,
+    state::InGameComponent
 };
 
 pub struct PlayerPlugin;
@@ -50,7 +51,8 @@ fn player_spawn_system(
         .insert(Player)
         .insert(SpriteSize::from(SPRITE_SIZE))
         .insert(Movable {auto_despawn: false})
-        .insert(Velocity {x: 0., y: 0.});
+        .insert(Velocity {x: 0., y: 0.})
+        .insert(InGameComponent);
 }
 
 fn player_keyboard_event_system(
@@ -75,7 +77,7 @@ fn player_fire_system(
     query: Query<&Transform, With<Player>>
 ) {
     if let Ok(player_tf) = query.get_single() {
-        if kb.just_pressed(KeyCode::Space) {
+        if kb.just_pressed(KeyCode::X) {
             let (x, y) = (player_tf.translation.x, player_tf.translation.y);
 
             commands
@@ -91,7 +93,8 @@ fn player_fire_system(
                 .insert(SpriteSize::from(SPRITE_SIZE))
                 .insert(Movable {auto_despawn: true})
                 .insert(Laser)
-                .insert(Velocity {x: 0., y: 1.});
+                .insert(Velocity {x: 0., y: 1.})
+                .insert(InGameComponent);
         }
     }
 }

@@ -8,14 +8,16 @@ use bevy::prelude::*;
 use plugins::{
     player::PlayerPlugin,
     enemy::EnemyPlugin,
-    collide_plugin::CollideFireEnemiesPlugin
+    collide_plugin::CollideFireEnemiesPlugin,
+    endgame_plugin::EndgamePlugin
 };
 use component::{
     velocity::Velocity,
     movable::Movable,
     player::ScoreBugFix,
     menu::TextMenu,
-    hud::TextTimer
+    hud::TextTimer,
+    state::InGameComponent
 };
 use resources::{Timer as MonTimer, WinSize, GameTextures, Scoring};
 use factory::texture_factory::*;
@@ -27,7 +29,7 @@ const SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 const ENEMY_MAX: u32 = 2; 
-const TIME: f32 = 30.; 
+const TIME: f32 = 5.; 
 // endregion
 
 
@@ -38,6 +40,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup_system)
         .add_state(AppState::MainMenu) // state de départ
+        .add_plugin(EndgamePlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(EnemyPlugin)
         .add_plugin(CollideFireEnemiesPlugin)
@@ -56,11 +59,16 @@ fn main() {
                 .with_system(on_exit_menu_sytem)
         )
         .add_system_set(
+            SystemSet::on_exit(AppState::InGame)
+                .with_system(on_exit_ingame_sytem)
+        )
+        .add_system_set(
             SystemSet::on_update(AppState::MainMenu)
                 .with_system(from_menu_to_game_system)
         )
         .add_system_set(
             SystemSet::on_update(AppState::InGame)
+                .with_system(from_game_to_endgame_system)
                 .with_system(movable_system)
                 .with_system(update_timer_system)
                 .with_system(update_timer_text_system)
@@ -77,6 +85,15 @@ fn from_menu_to_game_system(
     }
 }
 
+fn from_game_to_endgame_system(
+    mut app_state: ResMut<State<AppState>>,
+    timer: Res<MonTimer>
+) {
+    if timer.0 < 0. {
+        app_state.set(AppState::EndGame).unwrap();
+    }
+}
+
 fn on_exit_menu_sytem(
     mut commands: Commands,
     query: Query<Entity, With<TextMenu>>
@@ -84,6 +101,14 @@ fn on_exit_menu_sytem(
     let entity = query.get_single().unwrap();
     commands.entity(entity).despawn();
 }   
+
+fn on_exit_ingame_sytem(
+    mut commands: Commands,
+    query: Query<Entity, With<InGameComponent>>
+) {
+    query.iter()
+        .for_each(|entity| commands.entity(entity).despawn());
+}
 
 fn write_scoring_system(
     asset_server: Res<AssetServer>,
@@ -115,7 +140,8 @@ fn write_scoring_system(
             transform: Transform::from_xyz(pos_score.0, pos_score.1, 1.),
             ..Default::default()
         })
-        .insert(ScoreBugFix);
+        .insert(ScoreBugFix)
+        .insert(InGameComponent);
 
 }
 
@@ -202,7 +228,8 @@ fn restart_timer_system(mut timer: ResMut<MonTimer>) {
 
 fn update_timer_system(
     mut timer: ResMut<MonTimer>,
-    time: Res<Time>
+    time: Res<Time>,
+
 ) {
     timer.0 -= time.delta_seconds();
 }
@@ -253,5 +280,6 @@ fn write_timer_system(
             transform: Transform::from_xyz(x, y, 1.),
             ..Default::default()
         })
-        .insert(TextTimer);
+        .insert(TextTimer)
+        .insert(InGameComponent);
 }

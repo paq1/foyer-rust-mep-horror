@@ -13,7 +13,8 @@ use crate::component::{
     player::ScoreBugFix,
     velocity::Velocity,
     movable::Movable,
-    push_file::PushFile
+    push_file::PushFile,
+    state::InGameComponent
 };
 use crate::resources::{
     GameTextures
@@ -140,5 +141,6 @@ fn spawn_push_file(
         .insert(SpriteSize::from(SPRITE_SIZE))
         .insert(Velocity {x: 0., y: 0.8})
         .insert(Movable { auto_despawn: true })
-        .insert(PushFile);
+        .insert(PushFile)
+        .insert(InGameComponent);
 }
