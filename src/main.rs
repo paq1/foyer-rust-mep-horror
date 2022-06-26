@@ -29,7 +29,7 @@ const SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;
 const ENEMY_MAX: u32 = 2; 
-const TIME: f32 = 5.; 
+const TIME: f32 = 30.; 
 // endregion
 
 
