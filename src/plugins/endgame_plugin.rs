@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+use crate::{AppState, POLICE};
 use crate::component::{
     state::InEndgameComponent
 };
@@ -64,7 +64,7 @@ fn setup_endgame_system(
                     value: format!("Score : {}", scoring.bug_fix),
                     style: TextStyle {
                         color: Color::GREEN,
-                        font: asset_server.load("COMICATE.TTF"),
+                        font: asset_server.load(POLICE),
                         font_size: 36.
                     }
                 }],

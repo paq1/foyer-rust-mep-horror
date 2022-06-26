@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+use crate::{AppState, POLICE};
 use crate::component::{
     menu::TextMenu
 };
@@ -37,7 +37,7 @@ fn write_menu_system(
                     value: "press [space] to start".to_string(),
                     style: TextStyle {
                         color: Color::RED,
-                        font: asset_server.load("COMICATE.TTF"),
+                        font: asset_server.load(POLICE),
                         font_size: 36.
                     }
                 }],

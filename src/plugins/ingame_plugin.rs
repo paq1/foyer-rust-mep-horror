@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{AppState, TIME, TIME_STEP, BASE_SPEED};
+use crate::{AppState, TIME, TIME_STEP, BASE_SPEED, POLICE};
 use crate::component::{
     hud::TextTimer,
     state::InGameComponent,
@@ -50,7 +50,7 @@ fn write_scoring_system(
                     value: "bug fix : 0".to_string(),
                     style: TextStyle {
                         color: Color::GREEN,
-                        font: asset_server.load("COMICATE.TTF"),
+                        font: asset_server.load(POLICE),
                         font_size: 36.
                     }
                 }],
@@ -84,7 +84,7 @@ fn write_timer_system(
                     value: "MEP in 0 seconds".to_string(),
                     style: TextStyle {
                         color: Color::ORANGE,
-                        font: asset_server.load("COMICATE.TTF"),
+                        font: asset_server.load(POLICE),
                         font_size: 36.
                     }
                 }],
