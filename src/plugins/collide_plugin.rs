@@ -1,11 +1,13 @@
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
+use rand::prelude::*;
+
 use bevy::prelude::*;
 use bevy::math::Vec3Swizzles;
 use bevy::sprite::collide_aabb::collide;
 
-use crate::{Scoring, SPRITE_SIZE};
+use crate::{Scoring, SPRITE_SIZE, POLICE};
 use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
@@ -14,10 +16,12 @@ use crate::component::{
     velocity::Velocity,
     movable::Movable,
     push_file::PushFile,
-    state::InGameComponent
+    state::InGameComponent,
+    temporary::Temporary
 };
 use crate::resources::{
-    GameTextures
+    GameTextures,
+    WinSize
 };
 
 pub struct CollideFireEnemiesPlugin;
@@ -31,7 +35,9 @@ impl Plugin for CollideFireEnemiesPlugin {
 
 fn player_file_hit_enemy_system(
     mut commands: Commands,
+    win_size: Res<WinSize>,
     mut scoring: ResMut<Scoring>,
+    asset_server: Res<AssetServer>,
     game_textures: Res<GameTextures>,
     laser_query: Query<(Entity, &Transform, &SpriteSize), With<Laser>>,
     enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
@@ -42,13 +48,15 @@ fn player_file_hit_enemy_system(
         .fold(
             HashSet::new(), 
             |acc, current| 
-            handle_collide_laser_enemies(&mut commands, &mut scoring, &acc, current, &game_textures, &enemy_query, &mut score_bug_fix_query)
+            handle_collide_laser_enemies(&mut commands, &win_size, &mut scoring, &asset_server, &acc, current, &game_textures, &enemy_query, &mut score_bug_fix_query)
         );
 }
 
 fn handle_collide_laser_enemies(
     commands: &mut Commands,
+    win_size: &Res<WinSize>,
     mut scoring: &mut ResMut<Scoring>,
+    asset_server: &Res<AssetServer>,
     despawned_entities: &HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
     game_textures: &Res<GameTextures>,
@@ -60,13 +68,15 @@ fn handle_collide_laser_enemies(
         .fold(
             despawned_entities.clone(), 
             |acc: HashSet<Entity>, current| 
-            handle_collide_laser_enemy(commands, &mut scoring, acc, laser_info, current, game_textures, score_bug_fix_query)
+            handle_collide_laser_enemy(commands, win_size, &mut scoring, asset_server, acc, laser_info, current, game_textures, score_bug_fix_query)
         )
 }
 
 fn handle_collide_laser_enemy(
     commands: &mut Commands,
+    win_size: &Res<WinSize>,
     scoring: &mut ResMut<Scoring>,
+    asset_server: &Res<AssetServer>,
     despawned_entities: HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
     enemy_info: (Entity, &Transform, &SpriteSize),
@@ -94,6 +104,7 @@ fn handle_collide_laser_enemy(
             commands.entity(enemy_entity).despawn();
             scoring.bug_fix += 1;
             spawn_push_file(commands, enemy_tf, game_textures);
+            spawn_push_text(commands, asset_server, win_size);
             
             for (_, mut text) in score_bug_fix_query.iter_mut() {
                 text.sections[0].value = format!("bug fix : {}", scoring.bug_fix).to_string();
@@ -143,4 +154,40 @@ fn spawn_push_file(
         .insert(Movable { auto_despawn: true })
         .insert(PushFile)
         .insert(InGameComponent);
+}
+
+fn spawn_push_text(
+    commands: &mut Commands, 
+    asset_server: &Res<AssetServer>,
+    win_size: &Res<WinSize>
+) {
+    let mut rng = thread_rng();
+    let w_span = win_size.w / 2. - 64.;
+    let h_span = win_size.h / 2. - 64.;
+    let x = rng.gen_range(-w_span..w_span);
+    let y = rng.gen_range(-h_span..h_span);// rng.gen_range(-h_span..h_span);
+
+    commands
+        .spawn_bundle(Text2dBundle {
+            text: Text {
+                sections: vec![TextSection {
+                    value: "PUSH !!".to_string(),
+                    style: TextStyle {
+                        color: Color::GREEN,
+                        font: asset_server.load(POLICE),
+                        font_size: 36.
+                    }
+                }],
+                
+                alignment: TextAlignment {
+                    vertical: VerticalAlign::Center,
+                    horizontal: HorizontalAlign::Center
+                },
+                
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(x, y, 1.),
+            ..Default::default()
+        })
+        .insert(Temporary { duration: 1., current_time: 0.});
 }

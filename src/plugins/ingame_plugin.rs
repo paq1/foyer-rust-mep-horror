@@ -6,7 +6,8 @@ use crate::component::{
     state::InGameComponent,
     velocity::Velocity,
     movable::Movable,
-    player::ScoreBugFix
+    player::ScoreBugFix,
+    temporary::Temporary
 };
 use crate::resources::{WinSize, Timer as MonTimer};
 
@@ -31,6 +32,7 @@ impl Plugin for IngamePlugin {
                     .with_system(movable_system)
                     .with_system(update_timer_system)
                     .with_system(update_timer_text_system)
+                    .with_system(update_temporary_entity_system)
             );
     }
 }
@@ -165,4 +167,19 @@ fn update_timer_text_system(
 
     let mut text = query_timer_text.get_single_mut().unwrap();
     text.sections[0].value = format!("MEP in {:.0} seconds", time_val).to_string();
+}
+
+fn update_temporary_entity_system(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Temporary)>
+) {
+    query.iter_mut()
+        .for_each(|(entity, mut temporary)| {
+            temporary.current_time += time.delta_seconds();
+
+            if temporary.current_time > temporary.duration {
+                commands.entity(entity).despawn();
+            }
+        });
 }
