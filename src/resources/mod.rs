@@ -11,8 +11,6 @@ pub struct GameTextures {
     pub fixme_file: Handle<Image>
 }
 
-pub struct EnemyCount(pub u32);
-
 pub struct Scoring {
     pub bug_fix: u32
 }

@@ -5,7 +5,7 @@ use bevy::sprite::collide_aabb::collide;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
-use crate::{EnemyCount, Scoring};
+use crate::Scoring;
 use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
@@ -27,7 +27,6 @@ impl Plugin for CollideFireEnemiesPlugin {
 
 fn player_file_hit_enemy_system(
     mut commands: Commands,
-    mut enemy_count: ResMut<EnemyCount>,
     mut scoring: ResMut<Scoring>,
     laser_query: Query<(Entity, &Transform, &SpriteSize), With<Laser>>,
     enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
@@ -38,13 +37,12 @@ fn player_file_hit_enemy_system(
         .fold(
             HashSet::new(), 
             |acc, current| 
-            handle_collide_laser_enemies(&mut commands, &mut enemy_count, &mut scoring, &acc, current, &enemy_query, &mut score_bug_fix_query)
+            handle_collide_laser_enemies(&mut commands, &mut scoring, &acc, current, &enemy_query, &mut score_bug_fix_query)
         );
 }
 
 fn handle_collide_laser_enemies(
     commands: &mut Commands,
-    mut enemy_count: &mut ResMut<EnemyCount>,
     mut scoring: &mut ResMut<Scoring>,
     despawned_entities: &HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
@@ -56,13 +54,12 @@ fn handle_collide_laser_enemies(
         .fold(
             despawned_entities.clone(), 
             |acc: HashSet<Entity>, current| 
-            handle_collide_laser_enemy(commands, &mut enemy_count, &mut scoring, acc, laser_info, current, score_bug_fix_query)
+            handle_collide_laser_enemy(commands, &mut scoring, acc, laser_info, current, score_bug_fix_query)
         )
 }
 
 fn handle_collide_laser_enemy(
     commands: &mut Commands,
-    enemy_count: &mut ResMut<EnemyCount>,
     scoring: &mut ResMut<Scoring>,
     despawned_entities: HashSet<Entity>, 
     laser_info: (Entity, &Transform, &SpriteSize),
@@ -88,7 +85,6 @@ fn handle_collide_laser_enemy(
         //remove enemy
         let despawn_plus_enemy: HashSet<Entity> = if !despawned_entities.contains(&enemy_entity) {
             commands.entity(enemy_entity).despawn();
-            enemy_count.0 -= 1;
             scoring.bug_fix += 1;
             
             for (_, mut text) in score_bug_fix_query.iter_mut() {

@@ -160,7 +160,6 @@ fn setup_system(
     let game_textures = create_game_textures(&asset_server);
 
     commands.insert_resource(game_textures);
-    commands.insert_resource(EnemyCount(0));
     commands.insert_resource(Scoring::default());
 }
 
@@ -179,7 +178,7 @@ fn movable_system(
         translation.y += velocity.y * TIME_STEP * BASE_SPEED;
 
         if movable.auto_despawn {
-            const MARGIN: f32 = 200.;
+            const MARGIN: f32 = 300.;
             if translation.y > win_size.h / 2. + MARGIN
                 || translation.y < -win_size.h / 2. - MARGIN
                 || translation.x > win_size.w / 2. + MARGIN
