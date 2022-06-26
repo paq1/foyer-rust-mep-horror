@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::prelude::*;
-use crate::{GameTextures, WinSize, EnemyCount, COMPUTER_SIZE, ENEMY_MAX};
+use crate::{GameTextures, WinSize, EnemyCount, SPRITE_SIZE, ENEMY_MAX};
 use crate::component::{
     enemy::Enemy,
     sprite_size::SpriteSize,
@@ -49,7 +49,7 @@ fn spawn_enemy(
             texture: game_textures.fixme_file.clone(),
             ..Default::default()
         })
-        .insert(SpriteSize::from(COMPUTER_SIZE))
+        .insert(SpriteSize::from(SPRITE_SIZE))
         .insert(Enemy);
 
     enemy_count.0 += 1;

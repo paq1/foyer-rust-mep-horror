@@ -21,8 +21,7 @@ use factory::texture_factory::*;
 use states::AppState;
 
 // region constants
-const COMPUTER_SIZE: (f32, f32) = (64., 64.);
-const FILE_LASER_SIZE: (f32, f32) = (64., 64.);
+const SPRITE_SIZE: (f32, f32) = (64., 64.);
 const SPRITE_SCALE: f32 = 1.;
 const TIME_STEP: f32 = 1. / 60.;
 const BASE_SPEED: f32 = 500.;

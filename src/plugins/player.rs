@@ -1,17 +1,14 @@
 use bevy::prelude::*;
 
-
-
-use crate::{COMPUTER_SIZE, SPRITE_SCALE, FILE_LASER_SIZE};
-use crate::component::sprite_size::SpriteSize;
+use crate::{SPRITE_SIZE, SPRITE_SCALE};
 use crate::resources::{GameTextures, WinSize};
 use crate::AppState;
-
 use crate::component::{
     player::Player, 
     velocity::Velocity,
     movable::Movable,
-    laser::Laser
+    laser::Laser,
+    sprite_size::SpriteSize
 };
 
 pub struct PlayerPlugin;
@@ -19,6 +16,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
+            // todo : avoir le meme comportement dans SystemSet::on_enter(AppState::InGame)
             // .add_startup_system_to_stage(StartupStage::PostStartup, player_spawn_system)
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
@@ -43,14 +41,14 @@ fn player_spawn_system(
         .spawn_bundle(SpriteBundle {
             texture: game_textures.computer.clone(),
             transform: Transform {
-                translation: Vec3::new(0., bottom + COMPUTER_SIZE.1 / 2. + 5., 10.),
+                translation: Vec3::new(0., bottom + SPRITE_SIZE.1 / 2. + 5., 10.),
                 scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.),
                 ..Default::default()
             },
             ..Default::default()
         })
         .insert(Player)
-        .insert(SpriteSize::from(COMPUTER_SIZE))
+        .insert(SpriteSize::from(SPRITE_SIZE))
         .insert(Movable {auto_despawn: false})
         .insert(Velocity {x: 0., y: 0.});
 }
@@ -90,7 +88,7 @@ fn player_fire_system(
                     },
                     ..Default::default()
                 })
-                .insert(SpriteSize::from(FILE_LASER_SIZE))
+                .insert(SpriteSize::from(SPRITE_SIZE))
                 .insert(Movable {auto_despawn: true})
                 .insert(Laser)
                 .insert(Velocity {x: 0., y: 1.});
