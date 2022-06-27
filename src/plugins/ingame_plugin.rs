@@ -69,7 +69,7 @@ fn write_scoring_system(
                 sections: vec![TextSection {
                     value: "bug fix : 0".to_string(),
                     style: TextStyle {
-                        color: Color::GREEN,
+                        color: Color::ORANGE,
                         font: asset_server.load(POLICE),
                         font_size: 36.
                     }
@@ -103,7 +103,7 @@ fn write_timer_system(
                 sections: vec![TextSection {
                     value: "MEP in 0 seconds".to_string(),
                     style: TextStyle {
-                        color: Color::ORANGE,
+                        color: Color::RED,
                         font: asset_server.load(POLICE),
                         font_size: 36.
                     }
