@@ -5,6 +5,7 @@ mod factory;
 mod states;
 
 use bevy::prelude::*;
+// use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 
 use plugins::{
     player::PlayerPlugin,
@@ -34,6 +35,8 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .insert_resource(WindowDescriptor {title: "Foyer MEP horror".to_string(),width: 600.0,height: 600.0,..Default::default()})
         .add_plugins(DefaultPlugins)
+        // .add_plugin(LogDiagnosticsPlugin::default())
+        // .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_startup_system(setup_system)
         .add_state(AppState::MainMenu) // state de départ
         .add_plugin(EndgamePlugin)

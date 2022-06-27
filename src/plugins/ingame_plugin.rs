@@ -47,7 +47,7 @@ fn print_bg(
             texture: game_textures.bg.clone(),
             transform: Transform {
                 translation: Vec3::new(0., 0., 1.),
-                scale: Vec3::new(4., 4., 1.),
+                scale: Vec3::new(1., 1., 1.),
                 ..Default::default()
             },
             ..Default::default()
