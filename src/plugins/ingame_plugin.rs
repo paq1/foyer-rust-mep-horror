@@ -9,7 +9,7 @@ use crate::component::{
     player::ScoreBugFix,
     temporary::Temporary
 };
-use crate::resources::{WinSize, Timer as MonTimer};
+use crate::resources::{WinSize, Timer as MonTimer, GameTextures};
 
 pub struct IngamePlugin;
 
@@ -18,6 +18,7 @@ impl Plugin for IngamePlugin {
         app
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame)
+                    .with_system(print_bg)
                     .with_system(write_scoring_system)
                     .with_system(write_timer_system)
                     .with_system(restart_timer_system)
@@ -35,6 +36,23 @@ impl Plugin for IngamePlugin {
                     .with_system(update_temporary_entity_system)
             );
     }
+}
+
+fn print_bg(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+) {
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: game_textures.bg.clone(),
+            transform: Transform {
+                translation: Vec3::new(0., 0., 1.),
+                scale: Vec3::new(4., 4., 1.),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(InGameComponent);
 }
 
 fn write_scoring_system(
@@ -64,7 +82,7 @@ fn write_scoring_system(
                 */
                 ..Default::default()
             },
-            transform: Transform::from_xyz(pos_score.0, pos_score.1, 1.),
+            transform: Transform::from_xyz(pos_score.0, pos_score.1, 2.),
             ..Default::default()
         })
         .insert(ScoreBugFix)
@@ -99,7 +117,7 @@ fn write_timer_system(
                 
                 ..Default::default()
             },
-            transform: Transform::from_xyz(x, y, 1.),
+            transform: Transform::from_xyz(x, y, 2.),
             ..Default::default()
         })
         .insert(TextTimer)

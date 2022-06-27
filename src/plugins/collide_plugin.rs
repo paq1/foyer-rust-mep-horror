@@ -173,7 +173,7 @@ fn spawn_push_text(
                 sections: vec![TextSection {
                     value: "PUSH !!".to_string(),
                     style: TextStyle {
-                        color: Color::GREEN,
+                        color: Color::rgb(0., 0.3, 0.),
                         font: asset_server.load(POLICE),
                         font_size: 36.
                     }
@@ -186,8 +186,9 @@ fn spawn_push_text(
                 
                 ..Default::default()
             },
-            transform: Transform::from_xyz(x, y, 1.),
+            transform: Transform::from_xyz(x, y, 2.),
             ..Default::default()
         })
-        .insert(Temporary { duration: 1., current_time: 0.});
+        .insert(Temporary { duration: 1., current_time: 0.})
+        .insert(InGameComponent);
 }
