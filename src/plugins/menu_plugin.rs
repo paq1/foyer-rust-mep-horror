@@ -123,11 +123,3 @@ fn from_menu_to_game_system(
         app_state.set(AppState::InGame).unwrap();
     }
 }
-
-fn text_menu() -> String {
-    vec![
-        "Foyer MEP horror",
-        "fixer le plus de bugs avant la MEP",
-        "appuyer [espace] pour jouer"
-    ].join("\n\n\n")
-}
